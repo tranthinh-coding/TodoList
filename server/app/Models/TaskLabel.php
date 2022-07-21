@@ -9,6 +9,8 @@ class TaskLabel extends Model {
     use HasFactory;
 
     protected $fillable = [
-        'name'
+        'name',
+        'color',
+        'user_id',
     ];
 }
