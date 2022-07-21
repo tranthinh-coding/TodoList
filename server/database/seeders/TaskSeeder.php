@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\Task;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Database\Factories\TaskFactory;
 
 class TaskSeeder extends Seeder
 {
     public function run()
     {
-        TaskFactory::factory()->count(400)->create();
+        Task::factory()->count(400)->create();
     }
 }
