@@ -3,18 +3,19 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\TaskLabel;
 use App\Enums\TaskStatusEnum;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
-class TaskFactory extends Factory
-{
-    public function definition(): array {
+class TaskFactory extends Factory {
+    public function definition (): array {
+        $user_id  = DB::table('users')->pluck('id')->random();
+        $label_id = DB::table('task_labels')->pluck('id')->random();
+
         return [
-            'name' => $this->faker->jobTitle(),
-            'status' => TaskStatusEnum::getRandomValue(),
-            'user_id' => User::query()->inRandomOrder('id')->first(),
-            'label_id' => TaskLabel::query()->inRandomOrder('id')->first(),
+            'name'     => $this->faker->jobTitle(),
+            'status'   => TaskStatusEnum::getRandomValue(),
+            'user_id'  => $user_id,
+            'label_id' => $label_id,
         ];
     }
 }
