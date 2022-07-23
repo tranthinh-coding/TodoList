@@ -16,7 +16,7 @@ use App\Http\Controllers\Api\AuthController;
 
 Route::prefix('v1')
      ->group(function () {
-         Route::post('/sign-in', [AuthController::class, 'handleSignIn'])->name('sign-in');
-         Route::post('/sign-up', [AuthController::class, 'handleSignUp'])->name('sign-up');
-         Route::post('/sign-out', [AuthController::class, 'handleSignOut'])->name('sign-out');
+         Route::post('/login', [AuthController::class, 'handleLogin']);
+         Route::post('/register', [AuthController::class, 'handleRegister']);
+         Route::post('/logout', [AuthController::class, 'handleLogout']);
      });
