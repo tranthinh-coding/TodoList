@@ -13,7 +13,7 @@ use App\Http\Requests\LoginRequest;
 use App\Models\PersonalAccessToken;
 
 class AuthController extends Controller {
-    private function jsonResponse (array $data, int $status = 200, array $headers = [], int $options = 0): JsonResponse {
+    private static function jsonResponse (array $data, int $status = 200, array $headers = [], int $options = 0): JsonResponse {
         return response()->json($data, $status, $headers, $options);
     }
 
@@ -27,10 +27,10 @@ class AuthController extends Controller {
                     ->where('email', $request->get('email'))
                     ->firstOrFail();
         if (! $user || ! Hash::check($request->get('password'), $user['password'])) {
-            return $this->jsonResponse(['This email or password is incorrect']);
+            return self::jsonResponse(['This email or password is incorrect']);
         }
         $token = $user->createToken('authToken')->plainTextToken;
-        return $this->jsonResponse([
+        return self::jsonResponse([
             'message'      => 'Login Success',
             'access_token' => $token,
             'token_type'   => 'Bearer',
@@ -48,18 +48,18 @@ class AuthController extends Controller {
         // merge token if array length < 2 => $token cannot assign
         [$tokenId, $token] = array_merge(explode('|', $request->bearerToken()), ['']);
         if (!$tokenId) {
-            return $this->jsonResponse(['message' => 'You\'re not login']);
+            return self::jsonResponse(['message' => 'You\'re not login']);
         }
 
         $userId = PersonalAccessToken::getUserId($tokenId, $token);
         if (! $userId) {
-            return $this->jsonResponse([
+            return self::jsonResponse([
                 'message' => 'Token is invalid',
             ]);
         }
 
         PersonalAccessToken::removeAllTokenUser($userId);
-        return $this->jsonResponse([
+        return self::jsonResponse([
             'message' => 'You have been logged out',
         ]);
     }
@@ -78,10 +78,10 @@ class AuthController extends Controller {
             'remember_token' => $remember_token,
         ]);
         if (!$user) {
-            return $this->jsonResponse(['Register failed'], 406);
+            return self::jsonResponse(['Register failed'], 406);
         }
         $token = $user->createToken('authToken')->plainTextToken;
-        return $this->jsonResponse([
+        return self::jsonResponse([
             'message'      => 'Register Success',
             'access_token' => $token,
             'token_type'   => 'Bearer',
