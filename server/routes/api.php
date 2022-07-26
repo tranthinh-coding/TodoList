@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\TaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,9 +15,25 @@ use App\Http\Controllers\Api\AuthController;
 |
 */
 
-Route::prefix('v1')
-     ->group(function () {
-         Route::post('/login', [AuthController::class, 'handleLogin']);
-         Route::post('/register', [AuthController::class, 'handleRegister']);
-         Route::post('/logout', [AuthController::class, 'handleLogout']);
-     });
+Route::prefix('v1')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/sanctum/token', [AuthController::class, 'createToken']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        /**
+         * TASK Resource
+         */
+        Route::get('/tasks', [TaskController::class, 'index']);
+        Route::post('/tasks', [TaskController::class, 'create']);
+        Route::get('/tasks/{id}/', [TaskController::class, 'show']);
+        Route::patch('/tasks/{id}', [TaskController::class, 'update']);
+        Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
+    });
+
+    Route::get('/test', static function () {
+        return config('cors.allowed_origins');
+    });
+});
