@@ -6,20 +6,20 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use App\Enums\TaskStatusEnum;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up(): void {
+    public function up (): void {
         Schema::create('tasks', static function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
-            $table->enum('status', TaskStatusEnum::asArray())->default(TaskStatusEnum::PENDING);
+            $table->enum('status', TaskStatusEnum::TYPES)->default(TaskStatusEnum::PENDING);
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->unsignedBigInteger('label_id')->nullable();
+            $table->string('label_name')->nullable();
+            $table->string('label_color')->nullable();
             $table->timestamp('expiration_date')->nullable();
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP'));
@@ -31,7 +31,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down(): void {
+    public function down (): void {
         Schema::dropIfExists('tasks');
     }
 };
