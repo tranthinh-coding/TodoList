@@ -15,10 +15,10 @@ class PersonalAccessToken extends Model {
      * @param $tokenId
      * @param $token
      *
-     * @return Collection|array|null
+     * @return mixed
      */
-    public static function getUserId ($tokenId, $token): Collection|array|null {
-        return self::query()
+    public static function getUserId ($tokenId, $token): mixed {
+         return self::query()
                    ->where('id', $tokenId)
                    ->where('token', hash('sha256', $token))
                    ->value('tokenable_id');
@@ -30,9 +30,6 @@ class PersonalAccessToken extends Model {
      * @return bool
      */
     public static function removeAllTokenUser ($userId): bool {
-        if ($userId && self::query()->where('tokenable_id', $userId)->delete()) {
-            return TRUE;
-        }
-        return FALSE;
+        return $userId && self::query()->where('tokenable_id', $userId)->delete();
     }
 }
