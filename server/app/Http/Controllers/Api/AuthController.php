@@ -11,31 +11,30 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 use App\Models\PersonalAccessToken;
+use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller {
-    private static function jsonResponse (array $data, int $status = 200, array $headers = [], int $options = 0): JsonResponse {
-        return response()->json($data, $status, $headers, $options);
-    }
-
     /**
      * @param LoginRequest $request
      *
      * @return JsonResponse
      */
-    public function handleLogin (LoginRequest $request): JsonResponse {
-        $user = User::query()
-                    ->where('email', $request->get('email'))
-                    ->firstOrFail();
-        if (! $user || ! Hash::check($request->get('password'), $user['password'])) {
-            return self::jsonResponse(['This email or password is incorrect']);
+    public static function login (LoginRequest $request): JsonResponse {
+        $user = User::query()->where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return Response::json(['message' => 'This email or password is incorrect'], 422);
         }
-        $token = $user->createToken('authToken')->plainTextToken;
-        return self::jsonResponse([
-            'message'      => 'Login Success',
-            'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'status_code'  => 200,
-            'user'         => $user,
+        return Response::json([
+            $request->device_name => $user->createToken($request->device_name)->plainTextToken,
+            'email'               => $user->email,
+            'name'                => $user->name,
+        ]);
+    }
+
+    public static function createToken (Request $request): JsonResponse {
+        return Response::json([
+            $request->device_name => $$request->user()->createToken($request->device_name)->plainTextToken,
         ]);
     }
 
@@ -44,24 +43,10 @@ class AuthController extends Controller {
      *
      * @return JsonResponse
      */
-    public function handleLogout (Request $request): JsonResponse {
-        // merge token if array length < 2 => $token cannot assign
-        [$tokenId, $token] = array_merge(explode('|', $request->bearerToken()), ['']);
-        if (!$tokenId) {
-            return self::jsonResponse(['message' => 'You\'re not login']);
-        }
-
-        $userId = PersonalAccessToken::getUserId($tokenId, $token);
-        if (! $userId) {
-            return self::jsonResponse([
-                'message' => 'Token is invalid',
-            ]);
-        }
-
-        PersonalAccessToken::removeAllTokenUser($userId);
-        return self::jsonResponse([
-            'message' => 'You have been logged out',
-        ]);
+    public static function logout (Request $request): JsonResponse {
+        $user = $request->user();
+        PersonalAccessToken::removeAllTokenUser($user->id);
+        return Response::json(['message' => 'You have been logged out',]);
     }
 
     /**
@@ -69,24 +54,18 @@ class AuthController extends Controller {
      *
      * @return JsonResponse
      */
-    public function handleRegister (RegisterRequest $request): JsonResponse {
-        $remember_token = $request->get('remember') ? Str::random(10) : NULL;
-        $user = User::query()->create([
+    public static function register (RegisterRequest $request): JsonResponse {
+        $remember_token = $request->remember ? Str::random(10) : NULL;
+        $user           = User::query()->create([
             'name'           => $request->get('name'),
             'email'          => $request->get('email'),
             'password'       => Hash::make($request->get('password')),
             'remember_token' => $remember_token,
         ]);
-        if (!$user) {
-            return self::jsonResponse(['Register failed'], 406);
-        }
-        $token = $user->createToken('authToken')->plainTextToken;
-        return self::jsonResponse([
-            'message'      => 'Register Success',
-            'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'status_code'  => 201,
-            'user'         => $user,
-        ], 201);
+        return Response::json([
+            $request->device_name => $user->createToken($request->device_name)->plainTextToken,
+            'email'               => $user->email,
+            'name'                => $user->name,
+        ]);
     }
 }
