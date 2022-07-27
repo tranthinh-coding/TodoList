@@ -9,17 +9,47 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\LoginRequest;
 use App\Models\PersonalAccessToken;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller {
     /**
-     * @param LoginRequest $request
+     * @param Request $request
      *
      * @return JsonResponse
      */
-    public static function login (LoginRequest $request): JsonResponse {
+    public static function login (Request $request): JsonResponse {
+        /**
+         * With remember_token
+         */
+        if ($request->remember_token) {
+            $user = User::query()->where('remember_token', $request->remember_token)->first();
+            if (!$user) {
+                return Response::json([
+                    'message' => 'Something went wrong',
+                ]);
+            }
+            return Response::json([
+                $request->device_name => $user->createToken($request->device_name)->plainTextToken,
+                'email'               => $user->email,
+                'name'                => $user->name,
+            ]);
+        }
+
+        /**
+         * With password
+         */
+        $validator = Validator::make($request->only(['email', 'password', 'device_name']), [
+            'email'       => 'required|email',
+            'password'    => 'required',
+            'device_name' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return Response::json($validator->errors());
+        }
+
         $user = User::query()->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
