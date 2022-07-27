@@ -27,8 +27,9 @@ class AuthController extends Controller {
             $user = User::query()->where('remember_token', $request->remember_token)->first();
             if (!$user) {
                 return Response::json([
-                    'message' => 'Something went wrong',
-                ]);
+                    'errors' => 'Something went wrong',
+                    'user'   => $user,
+                ], 500);
             }
             return Response::json([
                 $request->device_name => $user->createToken($request->device_name)->plainTextToken,
@@ -55,11 +56,17 @@ class AuthController extends Controller {
         if (!$user || !Hash::check($request->password, $user->password)) {
             return Response::json(['message' => 'This email or password is incorrect'], 422);
         }
-        return Response::json([
+        $responseData = [
             $request->device_name => $user->createToken($request->device_name)->plainTextToken,
             'email'               => $user->email,
             'name'                => $user->name,
-        ]);
+        ];
+        if ($request->remember_me) {
+            $user->remember_token = Str::random(10);
+            $user->save();
+            $responseData['remember_token'] = $user->remember_token;
+        }
+        return Response::json($responseData);
     }
 
     public static function createToken (Request $request): JsonResponse {
