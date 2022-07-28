@@ -9,15 +9,24 @@ export default {
     logoutSuccess: "Bạn đã đăng xuất",
     registerError: "Đăng ký không thành công",
     registerSuccess: "Đăng ký thành công",
+  },
+  pages: {
+    home: "Trang chủ",
+    welcomeBack: "Xin chào",
+    getStarted: "Bắt đầu"
+  },
+  form: {
+    name: "Họ và tên",
     email: "Email",
     password: "Mật khẩu",
     passwordConfirmation: "Nhập lại mật khẩu",
+    rememberMe: "Ghi nhớ mật khẩu",
   },
-  form: {
+  validate: {
     required: "Đây là một trường bắt buộc",
     email: "Vui lòng nhập đúng email",
     min: "Cần nhập tối thiểu {0} kí tự",
-    confirmation: "{type} xác nhận không chính xác"
+    confirmation: "{type} xác nhận không chính xác",
   },
   network: {
     connectSuccess: "Kết nối internet ổn định",

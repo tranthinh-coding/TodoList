@@ -9,15 +9,24 @@ export default {
     logoutSuccess: "You have been logout",
     registerError: "Register failed",
     registerSuccess: "Register successfully",
+  },
+  pages: {
+    home: "Home",
+    welcomeBack: 'Welcome back',
+    getStarted: 'Get started'
+  },
+  form: {
+    name: "Full name",
     email: "Email",
     password: "Password",
     passwordConfirmation: "Password confirmation",
+    rememberMe: "Remember me",
   },
-  form: {
+  validate: {
     required: "This field must be require",
     email: "Please input correct email address",
     min: "This field must be atleast {0} character | This field must be atleast {1} character",
-    confirmation: "Confirmation {type} is incorrect"
+    confirmation: "Confirmation {type} is incorrect",
   },
   network: {
     connectSuccess: "Stable internet connection",
