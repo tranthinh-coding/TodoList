@@ -1,14 +1,12 @@
 <template>
   <div>
-    a
+    about views
   </div>
 </template>
 
 <script>
 export default {
   setup () {
-    
-
     return {}
   }
 }

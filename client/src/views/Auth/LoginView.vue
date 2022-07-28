@@ -6,34 +6,52 @@
     :model="form"
     :rules="formRules"
     class="form"
-    label-position="right"
+    label-position="top"
     label-width="100px"
     @submit="submit"
   >
-    <el-form-item :label="t('auth.email')" prop="email" :error="formErrors.email">
+    <el-form-item>
+      <h1 class="form-header">{{ t("pages.welcomeBack") }}</h1>
+    </el-form-item>
+    <el-form-item
+      :label="t('form.email')"
+      prop="email"
+      :error="formErrors.email"
+    >
       <el-input
         v-model="form.email"
         label="email"
-        :placeholder="t('auth.email')"
+        :placeholder="t('form.email')"
         clearable
       ></el-input>
     </el-form-item>
-    <el-form-item :label="t('auth.password')" prop="password" :error="formErrors.password">
+    <el-form-item
+      :label="t('form.password')"
+      prop="password"
+      :error="formErrors.password"
+    >
       <el-input
         type="password"
         v-model="form.password"
         label="password"
-        :placeholder="t('auth.password')"
+        :placeholder="t('form.password')"
         clearable
         show-password
       ></el-input>
     </el-form-item>
+    <el-form-item prop="remember_me">
+      <el-checkbox
+        v-model="form.remember_me"
+        name="remember_me"
+        :label="t('form.rememberMe')"
+      ></el-checkbox>
+    </el-form-item>
     <el-form-item>
       <el-button
-        :disabled="isFetching"
-        
+        :disabled="loginResponse.isFetching"
         type="primary"
         size="large"
+        class="form-submit"
         @click="submit(formRef)"
         >{{ t("auth.login") }}</el-button
       >
@@ -43,46 +61,40 @@
 
 <script setup>
 import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useUser } from "@/store/useUser";
-import { useFetch } from "@/composables/useFetch";
-import { LOGIN_API, TokenKey } from "@/config/app";
-import { ElMessage } from "element-plus";
+import { ACCESS_TOKEN } from "@/config/app";
 
 const { t } = useI18n();
-
+const router = useRouter();
 const user = useUser();
 const formRef = ref();
 const form = reactive({
   email: "tranthinh.own@gmail.com",
   password: "123123123",
-  device_name: TokenKey,
+  device_name: ACCESS_TOKEN,
+  remember_me: false,
 });
 const formErrors = ref(initFormErrors());
-const { data, error, isFetching, execute } = useFetch(LOGIN_API, {
-  method: "post",
-  immediate: false,
-})
-  .post(form)
-  .json();
-
+const loginResponse = ref({});
 const formRules = {
   email: [
     {
       required: true,
-      message: t('form.required'),
+      message: t("validate.required"),
       trigger: "blur",
     },
     {
       type: "email",
-      message: t('form.email'),
+      message: t("validate.email"),
       trigger: "blur",
     },
   ],
   password: [
     {
       required: true,
-      message: t('form.required'),
+      message: t("validate.required"),
       trigger: "blur",
     },
   ],
@@ -98,29 +110,37 @@ async function submit(formRef) {
   formRef.validate(async (valid) => {
     if (!valid) return;
     formErrors.value = initFormErrors();
-    await execute();
-    if (error.value) {
-      typeof error.value == "string" &&
-        ElMessage({
-          message: error.value,
-          type: "error",
-          duration: 5 * 1000,
-        });
-      return (formErrors.value = { ...error.value });
+    loginResponse.value = await user.login(form);
+    if (loginResponse.value.error) {
+      return (formErrors.value = { ...loginResponse.value.error });
     }
-    ElMessage({
-      message: t('auth.loginSuccess'),
-      type: "success",
-      duration: 5 * 1000,
-    });
-    user.saveUser({ ...data.value, loginStatus: true });
+    return router.push({ name: "home", params: {} });
   });
 }
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+
 .form {
-  max-width: 500px;
+  max-width: 40rem;
   margin: auto;
+  background-color: var(--el-bg-color-overlay);
+  max-height: max-content;
+  min-height: 40rem;
+  padding: 2.8rem;
+  border-radius: var(--el-border-radius-base);
+}
+.form-header {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 1.8rem;
+  color: var(--el-color-primary);
+  text-align: center; 
+  width: 100%;
+  font-family: 'Ubuntu', sans-serif;
+}
+.form-submit {
+  width: 100%;
 }
 </style>
