@@ -274,6 +274,4 @@ video {
   display: none
 }
 
-body {
-  background-color: var(--el-bg-color-page);
-}
+@import url('./custom.css');
