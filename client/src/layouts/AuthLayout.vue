@@ -1,9 +1,11 @@
 <template>
   <div class="auth-layout">
-    <div class="bg-auth"></div>
     <slot></slot>
   </div>
 </template>
 
 <style scoped>
+.auth-layout {
+  background-color: rgba(0, 30, 38);
+}
 </style>
