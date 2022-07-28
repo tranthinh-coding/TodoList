@@ -1,41 +1,63 @@
 <template>
-  <el-config-provider>
-    <router-view />
-  </el-config-provider>
+  <transition name="slide-left">
+    <component class="layout-loader" :is="$route.meta.layout || 'div'">
+      <router-view v-slot="{ Component, route }">
+        <transition name="slide-left" appear>
+          <keep-alive>
+            <component class="component-loader" :is="Component" />
+          </keep-alive>
+        </transition>
+      </router-view>
+    </component>
+  </transition>
 </template>
 
 <script setup>
-import { reactive, watch } from "vue";
+import { watch, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useOnline } from "@vueuse/core";
-import { ElNotification, ElConfigProvider } from "element-plus";
-
+import { ElNotification } from "element-plus";
 const { t } = useI18n();
 const online = useOnline();
 
+const onl = ref();
+const off = ref();
+
 watch(online, () => {
-  (online.value &&
-    ElNotification({
-      message: t('network.reconnected'),
+  if (online.value) {
+    off.value?.close();
+    onl.value = ElNotification({
+      message: t("network.reconnected"),
       type: "success",
-      duration: 6 * 1000,
+      duration: 5 * 100,
       showClose: true,
-      max: 1,
       position: "bottom-left",
-    })) ||
-    ElNotification({
-      message: t('network.offline'),
+    });
+  } else {
+    onl.value?.close();
+    off.value = ElNotification({
+      message: t("network.offline"),
       type: "warning",
       duration: 0,
       showClose: true,
       position: "bottom-left",
     });
+  }
 });
 </script>
 
 <style scoped>
-.form {
-  max-width: 500px;
-  margin: auto;
+.layout-loader {
+  position: fixed;
+}
+.component-loader {
+  position: absolute;
+}
+.component-loader,
+.layout-loader {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
 }
 </style>
