@@ -1,14 +1,13 @@
 import Cookies from "js-cookie";
-import { TokenKey } from '@/config/app';
 
-export function isLogged() {
-  return Cookies.get(TokenKey) === 'true';
+export function getToken(key) {
+  return Cookies.get(key);
 }
 
-export function setLogged(token) {
-  return Cookies.set(TokenKey, token);
+export function setToken(key, token, time = 1) {
+  return Cookies.set(key, token, { expires: time });
 }
 
-export function removeToken() {
-  return Cookies.remove(TokenKey);
+export function removeToken(keys) {
+  Cookies.remove(keys);
 }

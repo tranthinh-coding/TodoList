@@ -1,12 +1,10 @@
 import axios from "axios";
-import Cookies from "js-cookie";
-
-import { TokenKey } from "@/config/app";
-import { isLogged, setLogged } from "@/utils/auth";
+import { ACCESS_TOKEN } from "@/config/app";
+import { getToken, setToken } from "@/utils/auth";
 
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common = {
-  Authorization: `Bearer ${Cookies.get(TokenKey)}`,
+  Authorization: `Bearer ${getToken(ACCESS_TOKEN)}`,
   Accept: "application/json;charset=utf-8",
   "X-Requested-With": "XMLHttpRequest",
 };
@@ -20,9 +18,9 @@ const service = axios.create({
 // Request intercepter
 service.interceptors.request.use(
   (config) => {
-    const token = isLogged();
+    const token = getToken(ACCESS_TOKEN);
     if (token) {
-      config.headers["Authorization"] = "Bearer " + isLogged(); // Set JWT token
+      config.headers["Authorization"] = "Bearer " + getToken(ACCESS_TOKEN); // Set JWT token
     }
     return config;
   },
@@ -36,7 +34,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (response) => {
     if (response.headers.authorization) {
-      setLogged(response.headers.authorization);
+      setToken(ACCESS_TOKEN, response.headers.authorization);
       response.data.token = response.headers.authorization;
     }
     return response.data;
