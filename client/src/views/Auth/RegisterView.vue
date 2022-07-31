@@ -173,9 +173,9 @@ function submit (formRef) {
     }
     user.saveUser(data.value);
     ElMessage({
-      message  : t("auth.loginSuccess"),
+      message  : t("auth.registerSuccess"),
       type     : "success",
-      duration : 500,
+      duration : 1.5 * 1000,
       showClose: true
     });
     return router.push({ name: "home", params: {} });
