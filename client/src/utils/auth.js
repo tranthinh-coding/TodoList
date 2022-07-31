@@ -9,5 +9,8 @@ export function setToken(key, token, time = 1) {
 }
 
 export function removeToken(keys) {
-  Cookies.remove(keys);
+  if (typeof keys !== 'string') {
+    return keys.forEach(key => Cookies.remove(key));
+  }
+  return Cookies.remove(keys);
 }
