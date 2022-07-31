@@ -3,7 +3,8 @@ html {
   -o-tab-size: 4;
   tab-size: 4;
   line-height: 1.15;
-  -webkit-text-size-adjust: 100%
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -274,4 +275,11 @@ video {
   display: none
 }
 
-@import url('./custom.css');
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
