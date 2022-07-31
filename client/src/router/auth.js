@@ -1,5 +1,5 @@
+import { useUser } from "@/store/useUser";
 import { lazyViews } from "@/utils";
-
 import AuthLayout from "@/layouts/AuthLayout.vue"
 
 export const authRoutes = [
@@ -10,7 +10,7 @@ export const authRoutes = [
     meta: {
       requireAuth: false,
       title: "Login",
-      layout: AuthLayout
+      layout: AuthLayout,
     },
   },
   {
@@ -20,7 +20,19 @@ export const authRoutes = [
     meta: {
       requireAuth: false,
       title: "Register",
-      layout: AuthLayout
+      layout: AuthLayout,
+    },
+  },
+  {
+    path: "/logout",
+    name: "logout",
+    async beforeEnter() {
+      const user = useUser();
+      await user.logout();
+      return { name: 'login' };
+    },
+    meta: {
+      requireAuth: true,
     },
   },
 ];
