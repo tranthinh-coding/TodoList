@@ -5,19 +5,12 @@
     scroll-to-error
     :model="form"
     :rules="formRules"
-    class="form"
-    label-position="top"
-    label-width="100px"
-    @submit="submit"
+    class="form rounded-xl"
   >
     <el-form-item>
       <h1 class="form-header">{{ t("pages.welcomeBack") }}</h1>
     </el-form-item>
-    <el-form-item
-      :label="t('form.email')"
-      prop="email"
-      :error="formErrors.email"
-    >
+    <el-form-item prop="email" :error="formErrors.email">
       <el-input
         v-model="form.email"
         label="email"
@@ -25,11 +18,7 @@
         clearable
       ></el-input>
     </el-form-item>
-    <el-form-item
-      :label="t('form.password')"
-      prop="password"
-      :error="formErrors.password"
-    >
+    <el-form-item prop="password" :error="formErrors.password">
       <el-input
         type="password"
         v-model="form.password"
@@ -40,21 +29,29 @@
       ></el-input>
     </el-form-item>
     <el-form-item prop="remember_me">
-      <el-checkbox
+      <vs-checkbox
         v-model="form.remember_me"
         name="remember_me"
         :label="t('form.rememberMe')"
-      ></el-checkbox>
+      />
     </el-form-item>
     <el-form-item>
       <el-button
-        :disabled="loginResponse.isFetching"
-        type="primary"
-        size="large"
+        :disabled="isFetching"
         class="form-submit"
-        @click="submit(formRef)"
-        >{{ t("auth.login") }}</el-button
+        @click.pvent="submit(formRef)"
+        type="primary"
       >
+        {{ t("auth.login") }}
+      </el-button>
+    </el-form-item>
+    <el-form-item size="large">
+      <span>
+        {{ t("auth.haveNotAnAccount") }}
+        <el-link type="primary">
+          <router-link :to="{ name: 'register' }">{{ t("auth.register") }}</router-link>
+        </el-link>
+      </span>
     </el-form-item>
   </el-form>
 </template>
@@ -64,82 +61,118 @@ import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useUser } from "@/store/useUser";
-import { ACCESS_TOKEN } from "@/config/app";
+import { ACCESS_TOKEN, LOGIN_API, REMEMBER_TOKEN } from "@/config/app";
+import { useFetch } from "@/composables/useFetch";
+import { ElMessage } from "element-plus";
 
-const { t } = useI18n();
-const router = useRouter();
-const user = useUser();
-const formRef = ref();
-const form = reactive({
-  email: "tranthinh.own@gmail.com",
-  password: "123123123",
+const { t }      = useI18n();
+const router     = useRouter();
+const user       = useUser();
+const formRef    = ref();
+const form       = reactive({
+  email      : "tranthinh.own@gmail.com",
+  password   : "123123123",
   device_name: ACCESS_TOKEN,
-  remember_me: false,
+  remember_me: true
 });
 const formErrors = ref(initFormErrors());
-const loginResponse = ref({});
-const formRules = {
-  email: [
+const formRules  = {
+  email   : [
     {
       required: true,
-      message: t("validate.required"),
-      trigger: "blur",
+      message : t("validate.required"),
+      trigger : "blur"
     },
     {
-      type: "email",
+      type   : "email",
       message: t("validate.email"),
-      trigger: "blur",
-    },
+      trigger: "blur"
+    }
   ],
   password: [
     {
       required: true,
-      message: t("validate.required"),
-      trigger: "blur",
-    },
-  ],
+      message : t("validate.required"),
+      trigger : "blur"
+    }
+  ]
 };
-function initFormErrors() {
+const isFetching = ref(false);
+
+function initFormErrors () {
   return {
-    email: "",
-    password: "",
+    email   : "",
+    password: ""
   };
 }
-async function submit(formRef) {
-  if (!formRef) return;
+
+const { data, error, execute: fetchExecute } = useFetch(LOGIN_API, {
+  method   : "post",
+  immediate: false
+}).post(form).json();
+
+function submit (formRef) {
+  if ( ! formRef) return;
   formRef.validate(async (valid) => {
-    if (!valid) return;
+    if ( ! valid) return;
+    isFetching.value = true;
     formErrors.value = initFormErrors();
-    loginResponse.value = await user.login(form);
-    if (loginResponse.value.error) {
-      return (formErrors.value = { ...loginResponse.value.error });
+    await fetchExecute();
+    isFetching.value = false;
+    if (error.value) {
+      typeof error.value == "string"
+      && ElMessage({
+        message  : error.value,
+        type     : "error",
+        duration : 8 * 1000,
+        showClose: true
+      });
+      return (formErrors.value = { ...error.value });
     }
+    user.saveUser(data.value);
+    ElMessage({
+      message  : t("auth.loginSuccess"),
+      type     : "success",
+      duration : 1.5 * 1000,
+      showClose: true
+    });
     return router.push({ name: "home", params: {} });
   });
 }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap");
 
 .form {
-  max-width: 40rem;
+  max-width: 38rem;
   margin: auto;
   background-color: var(--el-bg-color-overlay);
   max-height: max-content;
-  min-height: 40rem;
+  min-height: 22rem;
   padding: 2.8rem;
-  border-radius: var(--el-border-radius-base);
+  border-radius: var(--el-border-radius-large);
 }
+
+.el-form-item {
+  margin-bottom: 2rem;
+}
+
+.el-input__inner {
+  padding: 1.4rem 0;
+}
+
 .form-header {
   font-size: 2.8rem;
   font-weight: 700;
-  margin-bottom: 1.8rem;
+  margin-bottom: 2.4rem;
+  margin-top: 2rem;
   color: var(--el-color-primary);
-  text-align: center; 
+  text-align: center;
   width: 100%;
-  font-family: 'Ubuntu', sans-serif;
+  font-family: "Ubuntu", sans-serif;
 }
+
 .form-submit {
   width: 100%;
 }
