@@ -44,7 +44,7 @@ export function parseTime(time, cFormat) {
     s: date.getSeconds(),
     a: date.getDay(),
   };
-  const timeStr = format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
+  return format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
     let value = formatObj[key];
     // Note: getDay() returns 0 on Sunday
     if (key === "a") {
@@ -56,8 +56,6 @@ export function parseTime(time, cFormat) {
 
     return value || 0;
   });
-
-  return timeStr;
 }
 
 export function formatTime(time, option) {
