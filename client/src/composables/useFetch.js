@@ -1,13 +1,13 @@
 import { createFetch } from "@vueuse/core";
 import { getToken } from "@/utils/auth";
-import { ACCESS_TOKEN } from "@/config/app"
+import { ACCESS_TOKEN, API_V1 } from "@/config/app"
 import { useUser } from "@/store/useUser";
 
 import { start, done } from "nprogress";
 done();
 
 export const useFetch = createFetch({
-  baseUrl: process.env.VUE_APP_API_V1,
+  baseUrl: API_V1,
   options: {
     async beforeFetch({ options }) {
       start();
@@ -35,7 +35,6 @@ export const useFetch = createFetch({
     },
     timeout: 10000,
   },
-
   fetchOptions: {
     mode: "cors",
   },
