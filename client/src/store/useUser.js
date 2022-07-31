@@ -5,11 +5,9 @@ import {
   LOGIN_API,
   REGISTER_API,
   ACCESS_TOKEN,
-  REMEMBER_TOKEN,
+  REMEMBER_TOKEN, LOGOUT_API
 } from "@/config/app";
 import { removeToken, setToken } from "@/utils/auth";
-import { ElMessage } from "element-plus";
-import i18n from "@/config/i18n";
 
 export const useUser = defineStore("user", {
   state: () => ({
@@ -20,71 +18,40 @@ export const useUser = defineStore("user", {
   }),
   actions: {
     async login(form) {
-      const { data, error, isFetching } = await useFetch(LOGIN_API, {
+      const { data, error } = await useFetch(LOGIN_API, {
         method: "post",
-      })
-        .post(form)
-        .json();
-
-      if (error.value) {
-        typeof error.value == "string" &&
-          ElMessage({
-            message: error.value,
-            type: "error",
-            duration: 5 * 1000,
-            showClose: true,
-          });
-      } else {
-        ElMessage({
-          message: i18n.global.t("auth.loginSuccess"),
-          type: "success",
-          duration: 5 * 1000,
-          showClose: true,
-        });
-
-        console.log(data.value);
+      }).post(form).json();
+      if (!error.value) {
+        if(form[REMEMBER_TOKEN]) data.value[REMEMBER_TOKEN] = form[REMEMBER_TOKEN];
         this.saveUser(data.value);
-        setToken(ACCESS_TOKEN, this[ACCESS_TOKEN]);
-        setToken(REMEMBER_TOKEN, data.value[REMEMBER_TOKEN]);
       }
-      return { data, error, isFetching };
+      return { data, error };
     },
     async register(form) {
-      const { data, error, isFetching } = await useFetch(REGISTER_API, {
+      const { data, error } = await useFetch(REGISTER_API, {
         method: "post",
-      })
-        .post(form)
-        .json();
-
-      if (error.value) {
-        typeof error.value == "string" &&
-          ElMessage({
-            message: error.value,
-            type: "error",
-            duration: 5 * 1000,
-            showClose: true,
-          });
-      } else {
-        ElMessage({
-          message: i18n.global.t("auth.registerSuccess"),
-          type: "success",
-          duration: 5 * 1000,
-          showClose: true,
-        });
+      }).post(form).json();
+      if (!error.value) {
         this.saveUser(data.value);
-        setToken(ACCESS_TOKEN, this[ACCESS_TOKEN]);
       }
-      return { data, error, isFetching };
+      return { data, error };
     },
-    logout() {
+    async logout() {
+      if (this.getLoginStatus(ACCESS_TOKEN)) {
+        await useFetch(LOGOUT_API, {
+          method: "post",
+        }).post().json();
+      }
       this.$reset();
-      return removeToken([ACCESS_TOKEN, REMEMBER_TOKEN]);
+      removeToken([ACCESS_TOKEN, REMEMBER_TOKEN]);
     },
-    saveUser({ name, email, [ACCESS_TOKEN]: token }) {
+    saveUser({ name, email, [ACCESS_TOKEN]: _token, [REMEMBER_TOKEN]: _token2 }) {
       this.name = name;
       this.email = email;
-      this[ACCESS_TOKEN] = token;
+      this[ACCESS_TOKEN] = _token;
       this.loginStatus = true;
+      setToken(ACCESS_TOKEN, _token);
+      setToken(REMEMBER_TOKEN, _token2);
     },
   },
   getters: {
